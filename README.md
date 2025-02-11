@@ -28,7 +28,7 @@ This app fetches country data from an external API, requiring an **API key**. Fo
 
 1. Visit [Restful Countries API](https://restfulcountries.com/api-documentation/) for documentaton.
 2. Navigate [Here](https://restfulcountries.com/request-access-token) to generate your API Key.
-3. Add the API key to the 'CountriesApi.kt' file
+3. Add the API key to the 'CountriesApi.kt' file. Replace **[API KEY]** with your generated API Key.
    ```
    private const val AUTH_TOKEN = "Bearer [API KEY]"
    ```
