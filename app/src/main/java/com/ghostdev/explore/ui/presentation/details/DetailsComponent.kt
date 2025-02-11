@@ -137,17 +137,17 @@ fun CountryInfoCard(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        InfoText("Population", country?.population ?: "")
-        InfoText("Region", country?.continent ?: "")
-        InfoText("Capital", country?.capital ?: "")
-        InfoText("Size", country?.size ?: "")
+        InfoText("Population", country?.population ?: "Not available")
+        InfoText("Region", country?.continent ?: "Not available")
+        InfoText("Capital", country?.capital ?: "Not available")
+        InfoText("Size", country?.size ?: "Not available")
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        InfoText("Phone code", country?.phoneCode ?: "")
-        InfoText("Currency", country?.currency ?: "")
-        InfoText("Independence Date", country?.independenceDate ?: "")
-        InfoText("President", country?.currentPresident?.name ?: "")
+        InfoText("Phone code", country?.phoneCode ?: "Not available")
+        InfoText("Currency", country?.currency ?: "Not available")
+        InfoText("Independence Date", country?.independenceDate ?: "Not available")
+        InfoText("President", country?.currentPresident?.name ?: "Not available")
 
         Spacer(modifier = Modifier.height(8.dp))
     }
