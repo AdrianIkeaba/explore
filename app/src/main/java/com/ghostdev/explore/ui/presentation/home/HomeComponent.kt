@@ -52,7 +52,6 @@ import com.ghostdev.explore.ui.presentation.BaseLogic
 import com.ghostdev.explore.ui.presentation.base.BaseLoadingComposable
 import com.ghostdev.explore.ui.theme.grey2
 import com.ghostdev.explore.ui.theme.white
-import kotlinx.coroutines.delay
 
 @Composable
 fun HomeComponent(
@@ -143,12 +142,8 @@ private fun HomeScreen(
                 )
             },
             shape = RoundedCornerShape(8.dp),
-            trailingIcon = {
+            leadingIcon = {
                 Icon(
-                    modifier = Modifier
-                        .clickable {
-                            onSearch()
-                        },
                     painter = painterResource(R.drawable.search),
                     contentDescription = "search country icon"
                 )
