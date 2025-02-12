@@ -7,6 +7,7 @@ import com.ghostdev.explore.data.repo.CountryRepo
 import com.ghostdev.explore.data.repo.CountryRepoImpl
 import com.ghostdev.explore.ui.presentation.BaseLogic
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
@@ -31,6 +32,12 @@ val provideHttpClientModule = module {
                     ignoreUnknownKeys = true
                     isLenient = true
                 }, contentType = ContentType.Any)
+            }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 15000
+                connectTimeoutMillis = 15000
+                socketTimeoutMillis = 15000
             }
         }
     }

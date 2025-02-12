@@ -25,10 +25,14 @@ fun NavGraph(
         composable(NavDestinations.SplashScreen.toString()) {
             SplashScreen(
                 onAnimationEnd = {
-                    navController.navigate(NavDestinations.Home.toString())
+                    navController.navigate(NavDestinations.Home.toString()) {
+                        popUpTo(NavDestinations.SplashScreen.toString()) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
+
         composable(NavDestinations.Home.toString()) {
             HomeComponent(
                 viewmodel,
