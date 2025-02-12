@@ -32,8 +32,6 @@ import coil3.compose.AsyncImage
 import com.ghostdev.explore.R
 import com.ghostdev.explore.models.Country
 import com.ghostdev.explore.ui.presentation.BaseLogic
-import com.ghostdev.explore.ui.presentation.base.BaseLoadingComposable
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun DetailsComponent(

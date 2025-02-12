@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.ghostdev.explore.data.repo.CountryRepo
 import com.ghostdev.explore.models.CountriesResponse
 import com.ghostdev.explore.models.Country
-import com.ghostdev.explore.models.CountryResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
