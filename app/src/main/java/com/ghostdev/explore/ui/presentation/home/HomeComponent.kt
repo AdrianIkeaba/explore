@@ -1,5 +1,8 @@
 package com.ghostdev.explore.ui.presentation.home
 
+import android.annotation.SuppressLint
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +52,7 @@ import com.ghostdev.explore.ui.presentation.BaseLogic
 import com.ghostdev.explore.ui.presentation.base.BaseLoadingComposable
 import com.ghostdev.explore.ui.theme.grey2
 import com.ghostdev.explore.ui.theme.white
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeComponent(
@@ -76,6 +82,7 @@ fun HomeComponent(
     }
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 private fun HomeScreen(
     countries: CountriesResponse?,
@@ -193,15 +200,24 @@ private fun HomeScreen(
                         items = countries!!.data,
                         key = { it.iso2 ?: it.name ?: "" }
                     ) { country ->
+                        val offsetX = remember { Animatable(-100f) }
+
+                        LaunchedEffect(Unit) {
+                            offsetX.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(durationMillis = 500)
+                            )
+                        }
+
                         CountryItem(
                             countryImageUrl = country.href.flag ?: "",
                             countryName = country.name ?: "",
                             countryCapital = country.capital ?: "",
-                            onClick = { onCountryClick(country) }
+                            onClick = { onCountryClick(country) },
+                            modifier = Modifier.offset(x = offsetX.value.dp)
                         )
                     }
                 }
-
             }
         }
     }
@@ -209,13 +225,14 @@ private fun HomeScreen(
 
 @Composable
 private fun CountryItem(
+    modifier: Modifier = Modifier,
     countryImageUrl: String,
     countryName: String,
     countryCapital: String,
     onClick: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
