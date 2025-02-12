@@ -176,7 +176,7 @@ private fun HomeScreen(
             fontSize = 14.sp
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
 
         if (isLoading) {
