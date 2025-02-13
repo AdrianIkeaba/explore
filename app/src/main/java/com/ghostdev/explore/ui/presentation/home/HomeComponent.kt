@@ -45,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.ghostdev.explore.R
-import com.ghostdev.explore.models.CountriesResponse
 import com.ghostdev.explore.models.Country
 import com.ghostdev.explore.navigation.NavDestinations
 import com.ghostdev.explore.ui.presentation.BaseLogic
@@ -84,7 +83,7 @@ fun HomeComponent(
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 private fun HomeScreen(
-    countries: CountriesResponse?,
+    countries: List<Country>?,
     isLoading: Boolean = true,
     innerPadding: PaddingValues,
     isDarkTheme: Boolean,
@@ -177,7 +176,7 @@ private fun HomeScreen(
         if (isLoading) {
             BaseLoadingComposable()
         } else {
-            if (countries?.data?.isEmpty() == true) {
+            if (countries == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -191,28 +190,46 @@ private fun HomeScreen(
                 }
             } else {
                 LazyColumn {
-                    items(
-                        items = countries!!.data,
-                        key = { it.iso2 ?: it.name ?: "" }
-                    ) { country ->
-                        val offsetX = remember { Animatable(-100f) }
+                    countries
+                        .sortedBy { it.name.common }
+                        .groupBy { it.name.common.first().uppercaseChar() }
+                        .forEach { (letter, countryList) ->
 
-                        LaunchedEffect(Unit) {
-                            offsetX.animateTo(
-                                targetValue = 0f,
-                                animationSpec = tween(durationMillis = 500)
-                            )
+                            item {
+                                Text(
+                                    text = letter.toString(),
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                                )
+                            }
+
+                            items(
+                                items = countryList,
+                                key = { it.name.common }
+                            ) { country ->
+                                val offsetX = remember { Animatable(-100f) }
+
+                                LaunchedEffect(Unit) {
+                                    offsetX.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = tween(durationMillis = 500)
+                                    )
+                                }
+
+                                CountryItem(
+                                    countryImageUrl = country.flags.png,
+                                    countryName = country.name.common,
+                                    countryCapital = country.capital.getOrElse(0) { "Unknown" },
+                                    onClick = { onCountryClick(country) },
+                                    modifier = Modifier.offset(x = offsetX.value.dp)
+                                )
+                            }
                         }
-
-                        CountryItem(
-                            countryImageUrl = country.href.flag ?: "",
-                            countryName = country.name ?: "",
-                            countryCapital = country.capital ?: "",
-                            onClick = { onCountryClick(country) },
-                            modifier = Modifier.offset(x = offsetX.value.dp)
-                        )
-                    }
                 }
+
             }
         }
     }

@@ -1,15 +1,14 @@
 package com.ghostdev.explore.data.api
 
-import com.ghostdev.explore.models.CountriesResponse
-import com.ghostdev.explore.models.CountryResponse
+import com.ghostdev.explore.models.Country
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 
 interface CountriesApi {
-    suspend fun getAllCountries(): CountriesResponse
-    suspend fun getCountryByName(name: String): CountryResponse
+    suspend fun getAllCountries(): List<Country>
+    suspend fun getCountryByName(name: String): List<Country>
 }
 
 class KtorCountriesApi(
@@ -17,32 +16,29 @@ class KtorCountriesApi(
 ) : CountriesApi {
 
     companion object {
-        private const val API_URL = "https://restfulcountries.com/api/v1/countries"
-        private const val AUTH_TOKEN = "Bearer 2138|lIsUssMgBPBOAPXEDpbWk8kvmziXiGh1OhYWquSi"
+        private const val API_URL = "https://restcountries.com/v3.1"
     }
 
-    override suspend fun getAllCountries(): CountriesResponse {
+    override suspend fun getAllCountries(): List<Country> {
         return try {
-            client.get(API_URL) {
-                header("Authorization", AUTH_TOKEN)
+            client.get("$API_URL/all") {
                 header("Accept", "application/json")
-            }.body()
+            }.body<List<Country>>()
         } catch (e: Exception) {
             println("Error fetching countries: ${e.message}")
-            CountriesResponse(emptyList())
+            emptyList()
         }
     }
 
 
-    override suspend fun getCountryByName(name: String): CountryResponse {
+    override suspend fun getCountryByName(name: String): List<Country> {
         return try {
-            client.get("$API_URL/$name") {
-                header("Authorization", AUTH_TOKEN)
+            client.get("$API_URL/name/$name") {
                 header("Accept", "application/json")
             }.body()
         } catch (e: Exception) {
             println("Error fetching country '$name': ${e.message}")
-            CountryResponse(null)
+            emptyList()
         }
     }
 }

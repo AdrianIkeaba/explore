@@ -1,9 +1,8 @@
 package com.ghostdev.explore.data.repo
 
-import com.ghostdev.explore.models.CountriesResponse
-import com.ghostdev.explore.models.CountryResponse
+import com.ghostdev.explore.models.Country
 
 interface CountryRepo {
-    suspend fun getAllCountries(): CountriesResponse
-    suspend fun getCountryByName(name: String): CountryResponse
+    suspend fun getAllCountries(): List<Country>
+    suspend fun getCountryByName(name: String): List<Country>
 }

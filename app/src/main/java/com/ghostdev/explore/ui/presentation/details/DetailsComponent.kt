@@ -32,6 +32,8 @@ import coil3.compose.AsyncImage
 import com.ghostdev.explore.R
 import com.ghostdev.explore.models.Country
 import com.ghostdev.explore.ui.presentation.BaseLogic
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun DetailsComponent(
@@ -79,7 +81,7 @@ private fun DetailsScreen(
             )
 
             Text(
-                text = selectedCountry?.name ?: "",
+                text = selectedCountry?.name?.common ?: "",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -102,9 +104,9 @@ private fun DetailsScreen(
             shape = RoundedCornerShape(8.dp)
         ) {
             AsyncImage(
-                model = selectedCountry?.href?.flag,
+                model = selectedCountry?.flags?.png,
                 placeholder = painterResource(R.drawable.loading_flag),
-                contentDescription = "${selectedCountry?.name ?: ""} flag",
+                contentDescription = "${selectedCountry?.name?.common ?: ""} flag",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
@@ -135,17 +137,16 @@ fun CountryInfoCard(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        InfoText("Population", country?.population ?: "Not available")
-        InfoText("Region", country?.continent ?: "Not available")
-        InfoText("Capital", country?.capital ?: "Not available")
-        InfoText("Size", country?.size ?: "Not available")
+        InfoText("Population", (NumberFormat.getNumberInstance(Locale.US).format(country?.population) ?: "Not available").toString())
+        InfoText("Region", country?.continents?.get(0) ?: "Not available")
+        InfoText("Capital", country?.capital?.getOrElse(0) { "Not available" } ?: "Not available")
+        InfoText("Size", (((NumberFormat.getNumberInstance(Locale.US).format(country?.area) + " km²")
+            ?: "Not available")).toString())
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        InfoText("Phone code", country?.phoneCode ?: "Not available")
-        InfoText("Currency", country?.currency ?: "Not available")
-        InfoText("Independence Date", country?.independenceDate ?: "Not available")
-        InfoText("President", country?.currentPresident?.name ?: "Not available")
+        InfoText("Phone code", (country?.idd?.root.toString() + country?.idd?.suffixes?.joinToString(", ")))
+        InfoText("Currency", (country?.currencies?.values?.firstOrNull()?.name ?: "Not available").toString())
 
         Spacer(modifier = Modifier.height(8.dp))
     }
