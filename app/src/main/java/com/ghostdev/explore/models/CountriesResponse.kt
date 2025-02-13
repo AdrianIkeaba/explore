@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
+
 @Stable
 @Serializable
 data class Country(
@@ -18,7 +19,8 @@ data class Country(
     val timezones: List<String> = emptyList(),
     val idd: PhoneCode = PhoneCode(),
     val car: Car = Car(),
-    val flags: Flag = Flag()
+    val flags: Flag = Flag(),
+    val coatOfArms: CoatOfArms = CoatOfArms()
 )
 
 @Serializable
@@ -57,4 +59,10 @@ data class Flag(
     val png: String = "",
     val svg: String = "",
     val alt: String = "No description available"
+)
+
+@Serializable
+data class CoatOfArms(
+    val png: String = "",
+    val svg: String = ""
 )

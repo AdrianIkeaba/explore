@@ -1,7 +1,9 @@
 package com.ghostdev.explore.ui.presentation.details
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,15 +11,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +40,8 @@ import coil3.compose.AsyncImage
 import com.ghostdev.explore.R
 import com.ghostdev.explore.models.Country
 import com.ghostdev.explore.ui.presentation.BaseLogic
+import com.ghostdev.explore.ui.theme.black
+import com.ghostdev.explore.ui.theme.white
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -97,23 +107,9 @@ private fun DetailsScreen(
                 .height(24.dp)
         )
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            AsyncImage(
-                model = selectedCountry?.flags?.png,
-                placeholder = painterResource(R.drawable.loading_flag),
-                contentDescription = "${selectedCountry?.name?.common ?: ""} flag",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-        }
+        CountryImageCarousel(
+            selectedCountry = selectedCountry
+        )
 
         Spacer(
             modifier = Modifier
@@ -126,6 +122,103 @@ private fun DetailsScreen(
 
     }
 }
+
+@Composable
+fun CountryImageCarousel(selectedCountry: Country?) {
+    var currentIndex by remember { mutableIntStateOf(0) }
+    val images = listOf(
+        selectedCountry?.flags?.png ?: "",
+        selectedCountry?.coatOfArms?.png ?: ""
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        AsyncImage(
+            model = images[currentIndex],
+            placeholder = painterResource(R.drawable.loading_flag),
+            contentDescription = if (currentIndex == 0) {
+                "${selectedCountry?.name?.common} flag"
+            } else {
+                "${selectedCountry?.name?.common} coat of arms"
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = if (currentIndex == 1) ContentScale.Fit else ContentScale.Crop
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(black.copy(alpha = 0.3f))
+                    .clickable { if (currentIndex > 0) currentIndex-- }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_back),
+                    contentDescription = "Previous",
+                    tint = white,
+                    modifier = Modifier
+                        .size(19.dp)
+                        .align(Alignment.Center)
+                        .offset(x = 2.dp)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(black.copy(alpha = 0.3f))
+                    .clickable { if (currentIndex < images.size - 1) currentIndex++ }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_right),
+                    contentDescription = "Next",
+                    tint = white,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .align(Alignment.Center)
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            images.forEachIndexed { index, _ ->
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (currentIndex == index) white
+                            else white.copy(alpha = 0.5f)
+                        )
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun CountryInfoCard(
