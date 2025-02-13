@@ -40,7 +40,7 @@ fun FilterBottomSheet(
         skipPartiallyExpanded = true
     )
 
-    var isContinentsExpanded by remember { mutableStateOf(false) }
+    var isContinentsExpanded by remember { mutableStateOf(true) }
     var isTimezonesExpanded by remember { mutableStateOf(false) }
 
     val continentArrowRotation by animateFloatAsState(
@@ -60,139 +60,142 @@ fun FilterBottomSheet(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                Column(
+                Text(
+                    text = "Filter",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+
+                // Scrollable Content
+                Box(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
-                        text = "Filter",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-
-                    // Continents Section
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { isContinentsExpanded = !isContinentsExpanded },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Continent",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.arrow_down),
-                            contentDescription = "expand continents",
+                    Column {
+                        // Continents Section
+                        Row(
                             modifier = Modifier
-                                .size(24.dp)
-                                .rotate(continentArrowRotation)
-                        )
-                    }
-
-                    if (isContinentsExpanded) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        val continents = listOf(
-                            "Africa", "Antarctica", "Asia", "Australia",
-                            "Europe", "North America", "South America"
-                        )
-
-                        continents.forEach { continent ->
-                            Row(
+                                .fillMaxWidth()
+                                .clickable { isContinentsExpanded = !isContinentsExpanded },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Continent",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.arrow_down),
+                                contentDescription = "expand continents",
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .toggleable(
-                                        value = selectedContinents.contains(continent),
-                                        onValueChange = { selected ->
+                                    .size(24.dp)
+                                    .rotate(continentArrowRotation)
+                            )
+                        }
+
+                        if (isContinentsExpanded) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            val continents = listOf(
+                                "Africa", "Antarctica", "Asia", "Australia",
+                                "Europe", "North America", "South America"
+                            )
+
+                            continents.forEach { continent ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .toggleable(
+                                            value = selectedContinents.contains(continent),
+                                            onValueChange = { selected ->
+                                                onContinentSelected(continent, selected)
+                                            }
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = continent,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Checkbox(
+                                        checked = selectedContinents.contains(continent),
+                                        onCheckedChange = { selected ->
                                             onContinentSelected(continent, selected)
                                         }
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = continent,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Checkbox(
-                                    checked = selectedContinents.contains(continent),
-                                    onCheckedChange = { selected ->
-                                        onContinentSelected(continent, selected)
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                    // Timezones Section
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { isTimezonesExpanded = !isTimezonesExpanded },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Time Zone",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.arrow_down),
-                            contentDescription = "expand timezones",
+                        // Timezones Section
+                        Row(
                             modifier = Modifier
-                                .size(24.dp)
-                                .rotate(timezoneArrowRotation)
-                        )
-                    }
-
-                    if (isTimezonesExpanded) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        val timezones = listOf(
-                            "UTC−12:00", "UTC−11:00", "UTC−10:00", "UTC−09:30", "UTC−09:00",
-                            "UTC−08:00", "UTC−07:00", "UTC−06:00", "UTC−05:00", "UTC−04:00",
-                            "UTC−03:30", "UTC−03:00", "UTC−02:00", "UTC−01:00", "UTC±00:00",
-                            "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00",
-                            "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00",
-                            "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00",
-                            "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00",
-                            "UTC+12:45", "UTC+13:00", "UTC+14:00"
-                        )
-
-                        timezones.forEach { timezone ->
-                            Row(
+                                .fillMaxWidth()
+                                .clickable { isTimezonesExpanded = !isTimezonesExpanded },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Time Zone",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Icon(
+                                painter = painterResource(id = R.drawable.arrow_down),
+                                contentDescription = "expand timezones",
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .toggleable(
-                                        value = selectedTimezones.contains(timezone),
-                                        onValueChange = { selected ->
+                                    .size(24.dp)
+                                    .rotate(timezoneArrowRotation)
+                            )
+                        }
+
+                        if (isTimezonesExpanded) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            val timezones = listOf(
+                                "UTC−12:00", "UTC−11:00", "UTC−10:00", "UTC−09:30", "UTC−09:00",
+                                "UTC−08:00", "UTC−07:00", "UTC−06:00", "UTC−05:00", "UTC−04:00",
+                                "UTC−03:30", "UTC−03:00", "UTC−02:00", "UTC−01:00", "UTC±00:00",
+                                "UTC+01:00", "UTC+02:00", "UTC+03:00", "UTC+03:30", "UTC+04:00",
+                                "UTC+04:30", "UTC+05:00", "UTC+05:30", "UTC+05:45", "UTC+06:00",
+                                "UTC+06:30", "UTC+07:00", "UTC+08:00", "UTC+08:45", "UTC+09:00",
+                                "UTC+09:30", "UTC+10:00", "UTC+10:30", "UTC+11:00", "UTC+12:00",
+                                "UTC+12:45", "UTC+13:00", "UTC+14:00"
+                            )
+
+                            timezones.forEach { timezone ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .toggleable(
+                                            value = selectedTimezones.contains(timezone),
+                                            onValueChange = { selected ->
+                                                onTimezoneSelected(timezone, selected)
+                                            }
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = timezone,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Checkbox(
+                                        checked = selectedTimezones.contains(timezone),
+                                        onCheckedChange = { selected ->
                                             onTimezoneSelected(timezone, selected)
                                         }
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = timezone,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Checkbox(
-                                    checked = selectedTimezones.contains(timezone),
-                                    onCheckedChange = { selected ->
-                                        onTimezoneSelected(timezone, selected)
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -200,7 +203,7 @@ fun FilterBottomSheet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Buttons
+                // Sticky Buttons at the Bottom
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -213,17 +216,17 @@ fun FilterBottomSheet(
                             isContinentsExpanded = true
                             isTimezonesExpanded = false
                         },
-                        modifier = Modifier.weight(0.4f),
+                        modifier = Modifier.weight(0.3f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            modifier = Modifier.padding(vertical = 8.dp),
+                            modifier = Modifier.padding(vertical = 2.dp),
                             text = "Reset",
                             color = if (isDarkTheme) white else black
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.weight(0.1f))
 
                     Button(
                         onClick = {
@@ -236,14 +239,14 @@ fun FilterBottomSheet(
                                 }
                             }
                         },
-                        modifier = Modifier.weight(0.7f),
+                        modifier = Modifier.weight(0.6f),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = orange
                         )
                     ) {
                         Text(
-                            modifier = Modifier.padding(vertical = 8.dp),
+                            modifier = Modifier.padding(vertical = 2.dp),
                             text = "Show results",
                             color = white
                         )
@@ -251,5 +254,6 @@ fun FilterBottomSheet(
                 }
             }
         }
+
     }
 }

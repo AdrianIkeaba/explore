@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.ghostdev.explore.ui.theme.orange
 
 @Composable
 fun BaseLoadingComposable() {
@@ -29,7 +30,7 @@ fun BaseLoadingComposable() {
             CircularProgressIndicator(
                 modifier = Modifier.size(46.dp),
                 strokeWidth = 4.dp,
-                color = Color(0xFF01864A)
+                color = orange
             )
         }
     }
