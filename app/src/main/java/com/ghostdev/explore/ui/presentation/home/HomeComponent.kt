@@ -3,6 +3,7 @@ package com.ghostdev.explore.ui.presentation.home
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,12 +18,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +52,7 @@ import com.ghostdev.explore.models.Country
 import com.ghostdev.explore.navigation.NavDestinations
 import com.ghostdev.explore.ui.presentation.BaseLogic
 import com.ghostdev.explore.ui.presentation.base.BaseLoadingComposable
+import com.ghostdev.explore.ui.theme.black
 import com.ghostdev.explore.ui.theme.grey2
 import com.ghostdev.explore.ui.theme.white
 
@@ -61,39 +65,71 @@ fun HomeComponent(
     toggleTheme: () -> Unit
 ) {
     val state = viewmodel.appState.collectAsStateWithLifecycle()
-
     var countrySearchText by rememberSaveable { mutableStateOf("") }
 
-    state.let { ready ->
-        HomeScreen(
-            countries = ready.value.countries,
-            isLoading = ready.value.loading,
-            innerPadding = innerPadding,
-            isDarkTheme = isDarkTheme,
-            toggleTheme = remember { toggleTheme },
-            onCountryClick = remember { { country -> viewmodel.setSelectedCountry(country); controller.navigate(NavDestinations.Details.toString()) } },
-            countrySearchText = countrySearchText,
-            onCountrySearchTextChange = remember { { countrySearchText = it } },
-            onSearch = remember { { viewmodel.getCountryByName(countrySearchText) } },
-            onReset = remember { { countrySearchText = ""; viewmodel.getAllCountries() } }
-        )
-    }
+
+    var selectedContinents by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var selectedTimezones by rememberSaveable { mutableStateOf(setOf<String>()) }
+
+    HomeScreen(
+        countries = state.value.countries,
+        isLoading = state.value.loading,
+        innerPadding = innerPadding,
+        isDarkTheme = isDarkTheme,
+        toggleTheme = toggleTheme,
+        onCountryClick = { country ->
+            viewmodel.setSelectedCountry(country)
+            controller.navigate(NavDestinations.Details.toString())
+        },
+        countrySearchText = countrySearchText,
+        onCountrySearchTextChange = { countrySearchText = it },
+        onSearch = { viewmodel.getCountryByName(countrySearchText) },
+        onReset = {
+            countrySearchText = ""
+            selectedContinents = emptySet()
+            selectedTimezones = emptySet()
+            viewmodel.getAllCountries()
+        },
+        selectedContinents = selectedContinents,
+        selectedTimezones = selectedTimezones,
+        onContinentSelected = { continent, selected ->
+            selectedContinents = if (selected) selectedContinents + continent else selectedContinents - continent
+        },
+        onTimezoneSelected = { timezone, selected ->
+            selectedTimezones = if (selected) selectedTimezones + timezone else selectedTimezones - timezone
+        }
+    )
 }
+
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-private fun HomeScreen(
+fun HomeScreen(
     countries: List<Country>?,
-    isLoading: Boolean = true,
+    isLoading: Boolean,
     innerPadding: PaddingValues,
     isDarkTheme: Boolean,
     toggleTheme: () -> Unit,
-    onCountryClick: (Country) -> Unit = {},
-    countrySearchText: String = "",
-    onCountrySearchTextChange: (String) -> Unit = {},
-    onSearch: () -> Unit = {},
-    onReset: () -> Unit = {}
+    onCountryClick: (Country) -> Unit,
+    countrySearchText: String,
+    onCountrySearchTextChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onReset: () -> Unit,
+    selectedContinents: Set<String>,
+    selectedTimezones: Set<String>,
+    onContinentSelected: (String, Boolean) -> Unit,
+    onTimezoneSelected: (String, Boolean) -> Unit
 ) {
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    val filteredCountries = remember(countries, selectedContinents, selectedTimezones) {
+        countries?.filter { country ->
+            val matchesContinents = selectedContinents.isEmpty() || country.continents.any { it in selectedContinents }
+            val matchesTimezones = selectedTimezones.isEmpty() || country.timezones.any { it in selectedTimezones }
+            matchesContinents && matchesTimezones
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -109,9 +145,11 @@ private fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
-                modifier = Modifier
-                    .size(80.dp),
-                painter = painterResource(if (isDarkTheme) R.drawable.explore_dark else R.drawable.explore_light),
+                modifier = Modifier.size(80.dp),
+                painter = painterResource(
+                    if (isDarkTheme) R.drawable.explore_dark
+                    else R.drawable.explore_light
+                ),
                 contentDescription = "explore logo"
             )
 
@@ -121,7 +159,10 @@ private fun HomeScreen(
                 modifier = Modifier
                     .size(28.dp)
                     .clickable { toggleTheme() },
-                painter = painterResource(if (isDarkTheme) R.drawable.dark_toggle else R.drawable.light_toggle),
+                painter = painterResource(
+                    if (isDarkTheme) R.drawable.dark_toggle
+                    else R.drawable.light_toggle
+                ),
                 contentDescription = "theme toggle"
             )
         }
@@ -147,91 +188,136 @@ private fun HomeScreen(
                     contentDescription = "search country icon"
                 )
             },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearch()
+            trailingIcon = {
+                if (countrySearchText.isNotEmpty()) {
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                onCountrySearchTextChange("")
+                            },
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = "clear icon"
+                    )
                 }
-            )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch() })
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
+        Row(
             modifier = Modifier
-                .align(Alignment.End)
-                .clickable {
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedButton(
+                onClick = { showBottomSheet = true },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(
+                    0.5.dp,
+                    color = if (isDarkTheme) white else black
+                )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.filter),
+                    contentDescription = "filter icon",
+                    tint = if (isDarkTheme) white else black
+                )
+                Text(
+                    text = "Filter",
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDarkTheme) white else black
+                )
+            }
+
+            Spacer(modifier = Modifier.width(40.dp))
+
+            Text(
+                modifier = Modifier.clickable {
                     onReset()
                 },
-            text = "Reset",
-            fontSize = 14.sp
-        )
+                text = "Reset",
+                fontSize = 14.sp
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-
         if (isLoading) {
             BaseLoadingComposable()
+        } else if (filteredCountries == null) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "Error fetching data.\nTry again later :(",
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else if (filteredCountries.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = "No data matches filter :(",
+                    textAlign = TextAlign.Center
+                )
+            }
         } else {
-            if (countries == null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        text = "Error fetching data.\nTry again later",
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                LazyColumn {
-                    countries
-                        .sortedBy { it.name.common }
-                        .groupBy { it.name.common.first().uppercaseChar() }
-                        .forEach { (letter, countryList) ->
-
-                            item {
-                                Text(
-                                    text = letter.toString(),
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp, horizontal = 16.dp)
-                                )
-                            }
-
-                            items(
-                                items = countryList,
-                                key = { it.name.common }
-                            ) { country ->
-                                val offsetX = remember { Animatable(-100f) }
-
-                                LaunchedEffect(Unit) {
-                                    offsetX.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = tween(durationMillis = 500)
-                                    )
-                                }
-
-                                CountryItem(
-                                    countryImageUrl = country.flags.png,
-                                    countryName = country.name.common,
-                                    countryCapital = country.capital.getOrElse(0) { "Unknown" },
-                                    onClick = { onCountryClick(country) },
-                                    modifier = Modifier.offset(x = offsetX.value.dp)
-                                )
-                            }
+            LazyColumn {
+                filteredCountries
+                    .sortedBy { it.name.common }
+                    .groupBy { it.name.common.first().uppercaseChar() }
+                    .forEach { (letter, countryList) ->
+                        item {
+                            Text(
+                                text = letter.toString(),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                            )
                         }
-                }
 
+                        items(
+                            items = countryList,
+                            key = { it.name.common }
+                        ) { country ->
+                            val offsetX = remember { Animatable(-100f) }
+
+                            LaunchedEffect(Unit) {
+                                offsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(durationMillis = 500)
+                                )
+                            }
+
+                            CountryItem(
+                                countryImageUrl = country.flags.png,
+                                countryName = country.name.common,
+                                countryCapital = country.capital.getOrElse(0) { "Unknown" },
+                                onClick = { onCountryClick(country) },
+                                modifier = Modifier.offset(x = offsetX.value.dp)
+                            )
+                        }
+                    }
             }
         }
+
+        FilterBottomSheet(
+            isDarkTheme = isDarkTheme,
+            showBottomSheet = showBottomSheet,
+            onDismiss = { showBottomSheet = false },
+            selectedContinents = selectedContinents,
+            selectedTimezones = selectedTimezones,
+            onContinentSelected = onContinentSelected,
+            onTimezoneSelected = onTimezoneSelected,
+            onReset = onReset,
+            onApplyFilter = { showBottomSheet = false }
+        )
     }
 }
 
@@ -247,9 +333,7 @@ private fun CountryItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                onClick()
-            },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
